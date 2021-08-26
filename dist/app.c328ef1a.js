@@ -120,6 +120,7 @@ parcelRequire = (function (modules, cache, entry, globalName) {
 })({"app.js":[function(require,module,exports) {
 var ajax = new XMLHttpRequest();
 var NEWS_URL = 'https://api.hnpwa.com/v0/news/1.json';
+var CONTENT_URL = 'https://api.hnpwa.com/v0/item/@id.json';
 ajax.open('GET', NEWS_URL, false);
 ajax.send(); //json 형식이기때문에 객체로 바꾸기 가능
 
@@ -128,7 +129,10 @@ var ul = document.createElement('ul');
 
 for (var i = 0; i < 10; i++) {
   var li = document.createElement('li');
-  li.innerHTML = newsFeed[i].title;
+  var a = document.createElement('a');
+  a.href = '#';
+  a.innerHTML = "".concat(newsFeed[i].title, "(").concat(newsFeed[i].comments_count, ")");
+  li.appendChild(a);
   ul.appendChild(li);
 }
 
@@ -161,7 +165,7 @@ var parent = module.bundle.parent;
 if ((!parent || !parent.isParcelRequire) && typeof WebSocket !== 'undefined') {
   var hostname = "" || location.hostname;
   var protocol = location.protocol === 'https:' ? 'wss' : 'ws';
-  var ws = new WebSocket(protocol + '://' + hostname + ':' + "50015" + '/');
+  var ws = new WebSocket(protocol + '://' + hostname + ':' + "49978" + '/');
 
   ws.onmessage = function (event) {
     checkedAssets = {};
