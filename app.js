@@ -8,17 +8,21 @@ ajax.send();
 //json 형식이기때문에 객체로 바꾸기 가능
 const newsFeed = JSON.parse(ajax.response);
 
+const contatiner = document.getElementById('root');
+
 const ul = document.createElement('ul');
 const content = document.createElement('div');
+
 window.addEventListener('hashchange', function(){
     //console.log(location.hash); //id가져오기 (브라우저가 기본으로 제공해주는 객체)
     const id = location.hash.substr(1);
     ajax.open('GET', CONTENT_URL.replace('@id', id), false);
     ajax.send();
 
-    // const newsContent = JSON.parse(ajax.response)
-    // const title = document.createElement('h1');
+    const newsContent = JSON.parse(ajax.response)
+    const title = document.createElement('h1');
 
+    title.innerHTML = newsContent.title;
     content.appendChild(title);
     console.log(newsContent);
     // ul.innerHTML = `${conTent.content}`;
@@ -38,7 +42,5 @@ for(let i = 0; i < 10; i++){
     ul.appendChild(li);
 }
 
-
-
-document.getElementById('root').append(ul);
-
+contatiner.append(ul);
+contatiner.append(content);

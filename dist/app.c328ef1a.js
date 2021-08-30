@@ -125,15 +125,17 @@ ajax.open('GET', NEWS_URL, false);
 ajax.send(); //json 형식이기때문에 객체로 바꾸기 가능
 
 var newsFeed = JSON.parse(ajax.response);
+var contatiner = document.getElementById('root');
 var ul = document.createElement('ul');
 var content = document.createElement('div');
 window.addEventListener('hashchange', function () {
   //console.log(location.hash); //id가져오기 (브라우저가 기본으로 제공해주는 객체)
   var id = location.hash.substr(1);
   ajax.open('GET', CONTENT_URL.replace('@id', id), false);
-  ajax.send(); // const newsContent = JSON.parse(ajax.response)
-  // const title = document.createElement('h1');
-
+  ajax.send();
+  var newsContent = JSON.parse(ajax.response);
+  var title = document.createElement('h1');
+  title.innerHTML = newsContent.title;
   content.appendChild(title);
   console.log(newsContent); // ul.innerHTML = `${conTent.content}`;
 });
@@ -148,7 +150,8 @@ for (var i = 0; i < 10; i++) {
   ul.appendChild(li);
 }
 
-document.getElementById('root').append(ul);
+contatiner.append(ul);
+contatiner.append(content);
 },{}],"../../../usr/local/lib/node_modules/parcel-bundler/src/builtins/hmr-runtime.js":[function(require,module,exports) {
 var global = arguments[3];
 var OVERLAY_ID = '__parcel__error__overlay__';
@@ -177,7 +180,7 @@ var parent = module.bundle.parent;
 if ((!parent || !parent.isParcelRequire) && typeof WebSocket !== 'undefined') {
   var hostname = "" || location.hostname;
   var protocol = location.protocol === 'https:' ? 'wss' : 'ws';
-  var ws = new WebSocket(protocol + '://' + hostname + ':' + "60853" + '/');
+  var ws = new WebSocket(protocol + '://' + hostname + ':' + "50394" + '/');
 
   ws.onmessage = function (event) {
     checkedAssets = {};
