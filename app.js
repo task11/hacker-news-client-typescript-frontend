@@ -28,7 +28,7 @@ function newsFeed(){
         <div class="bg-gray-600 min-h-screen">
             <div class="bg-white text-xl">
                 <div class="mx-auto px-4">
-                    <div class="flax justify-between items-center py-6">
+                    <div class="flex justify-between items-center py-6">
                         <div class="flex justify-start">
                             <h1 class="font-extrabold">Hacker News</h1>
                         </div>
