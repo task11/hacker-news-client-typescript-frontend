@@ -54,11 +54,23 @@ function newsFeed(){
         
 
         newsList.push(`
-            <li>
-                <a href = #/show/${newsFeed[i].id}>
-                    ${newsFeed[i].title}(${newsFeed[i].comments_count})
-                </a>
-            </li>
+            <div class="p-6 bg-white mt-6 rounded-lg shadow-md transition-colors duration-500 hober:bg-green-100">
+                <div class="flex">
+                    <div class="flex-auto">
+                        <a href = #/show/${newsFeed[i].id}>${newsFeed[i].title}</a>
+                    </div>
+                    <div>
+                        <div class="text-center text-sm">${newsFeed[i].comments_count}</div>
+                    </div>
+                </div>
+                <div class="flex mt-3">
+                    <div class="grid grid-cols-3 text-sm text-gray-500">
+                        <div><i class="fas fa-user mr-1"></i>${newsFeed[i].user}</div>
+                        <div><i class="fas fa-heart mr-1"></i>${newsFeed[i].points}</div>
+                        <div><i class="far fa-clock mr-1"></i>${newsFeed[i].time_ago}</div>
+                    </div>
+                </div>
+            </div>
         `);
     }
 
@@ -75,20 +87,56 @@ function newsDetail(){
     //console.log(location.hash); //id가져오기 (브라우저가 기본으로 제공해주는 객체)
     const id = location.hash.substr(7);
     const newsContent = getData(CONTENT_URL.replace('@id', id));
+    let template = `
+        <div class="bg-gray-600 min-h-screen pb-8">
+            <div class="bg-white text-xl">
+                <div class="mx-auto px-4">
+                    <div class="flex justify-between items-center py-6">
+                        <div class="flex justify-start">
+                            <h1 class="font-extrabold">Hacker News</h1>
+                        </div>
+                        <div class="items-center justify-end">
+                            <a href="#/page/${store.currentPage}" class="text-gray-500">
+                                <i class="fa fa-times"></i>
+                            </a>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <div class="h-full border rounded-xl bg-white m-6 b-4">
+                <h2>${newsContent.title}</h2>
+                <div class="text-gray-400 h-20">
+                    ${newsContent.content}
+                </div>
 
-    container.innerHTML = `
-    <h1>${newsContent.title}</h1>
+                {{__comments__}}
 
-    <div>
-        <a href="#/page/${store.currentPage}">목록으로</a>
-    </div>
+            </div>
+        </div>
     `;
 
-    // title.innerHTML = newsContent.title;
+    function makeComment(comments, called = 1){
+        const commentString =[];
 
-    // content.appendChild(title);
-    // console.log(newsContent);
-    // // ul.innerHTML = `${conTent.content}`;
+        for(let i = 0; i < comments.length; i++){
+            commentString.push(`
+                <div style="padding-left : ${called * 40}px;" class="mt-4">
+                    <div class="text-gray-400">
+                        <i class="fa fa-sort-up mr-2"></i>
+                        <strong>${comments[i].user}</strong> ${comments[i].time_ago}
+                    </div>
+                    <p class="text-gray-700">${comments[i].content}</p>
+                </div>
+            `);
+            if(comments[i].comments.length > 0){
+                commentString.push(makeComment(comments[i].comments, called + 1));
+            }
+        }
+
+        return commentString.join('');
+    }
+
+    container.innerHTML = template.replace('{{__comments__}}', makeComment(newsContent.comments));
 
 }
 
