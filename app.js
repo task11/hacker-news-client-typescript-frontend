@@ -10,6 +10,7 @@ let endFlag;
 
 const store = {
     currentPage : 1, // 최근 페이지
+    feeds : [],
 
 }; 
 
@@ -20,9 +21,16 @@ function getData(url){
     return JSON.parse(ajax.response);
 }
 
+function makeFeeds(feeds){
+    for(let i = 0; i < feeds.length; i++){
+        feeds[i].read = false; 
+    }
+
+    return feeds;
+}
 
 function newsFeed(){
-    const newsFeed = getData(NEWS_URL);
+    let newsFeed = store.feeds;
     const newsList = [];
     let template = `
         <div class="bg-gray-600 min-h-screen">
@@ -49,12 +57,16 @@ function newsFeed(){
         </div>
     `; // handlebars templates 적용해보기
 
+    if(newsFeed.length === 0){
+       newsFeed = store.feeds = makeFeeds(getData(NEWS_URL)); // 두줄짜리 코드 한줄로
+    }
+
     for(let i = (store.currentPage - 1) * 10; i < store.currentPage * 10; i++){
         //const div = document.createElement('div');
         
 
         newsList.push(`
-            <div class="p-6 bg-white mt-6 rounded-lg shadow-md transition-colors duration-500 hober:bg-green-100">
+            <div class="p-6 ${newsFeed[i].read ? 'bg-red-500' : 'bg-white'} mt-6 rounded-lg shadow-md transition-colors duration-500 hober:bg-green-100">
                 <div class="flex">
                     <div class="flex-auto">
                         <a href = #/show/${newsFeed[i].id}>${newsFeed[i].title}</a>
@@ -74,6 +86,7 @@ function newsFeed(){
         `);
     }
 
+    
     template = template.replace('{{__news_feed__}}', newsList.join('')); //container.innerHTML = newsList.join(''); // 조인 사용시 배열안의 문자열들을 합쳐서 반환해준다, 배열 인덱스 사이의 구분자(default = ,)가 존재하기때문에 없애줘야하는데,, join 함수의 첫번째 파라미터는 구분자를 어떤것을 사용할지 정하는 부분. 그렇기때문에 '' 라는 공백을 넣으면 문자열만을 반환해준다.
     template = template.replace('{{__prev_page__}}', store.currentPage > 1 ? store.currentPage -1 : 1);
     template = template.replace('{{__next_page__}}', store.currentPage + 1);
@@ -114,6 +127,13 @@ function newsDetail(){
             </div>
         </div>
     `;
+
+    for(let i = 0; i < store.feeds.length; i++){
+        if (store.feeds[i].id === Number(id)){
+            store.feeds[i].read = true;
+            break;
+        }
+    }
 
     function makeComment(comments, called = 1){
         const commentString =[];
