@@ -11,7 +11,6 @@ let endFlag;
 const store = {
     currentPage : 1, // 최근 페이지
     feeds : [],
-
 }; 
 
 
