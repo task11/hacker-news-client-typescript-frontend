@@ -1,0 +1,12 @@
+{
+    "compilerOptions": { // 환경이 정의되는대로 수정이 필요한 것들을 꺼내서 설정
+        "strict": true, // 엄격한 변환 fasle로 두면 자바스크립트 형변환이 하나도 없어도 돌아감
+        "target": "ES5", // 타입스크립트 컴파일 이후 나오는 자바스크립트 파일의 버전 (브라우저에 따라 다르겠지요)
+        "module": "CommonJS",
+        "alwaysStrict": true,
+        "noImplicitAny": true, // Any 를 쓰지 못하도록 ( 타입을 정확히 기술할 수 있게 )
+        "noImplicitThis": true,
+        "sourceMap": true,
+        "downlevelIteration": true
+    }
+}

@@ -1,17 +1,36 @@
-const ajax = new XMLHttpRequest();
+//type alias
+type Store = {
+    currentPage: number;
+    feeds: NewsFeed[];
+}
+
+type NewsFeed = {
+    id: number;
+    comments_count: number;
+    url: string;
+    user: string;
+    time_ago: string;
+    points: number;
+    title: string;
+    read?: boolean; // ?: -> optional 
+}
+
+const container: HTMLElement | null = document.getElementById('root');
+const ajax: XMLHttpRequest = new XMLHttpRequest();
 const NEWS_URL = 'https://api.hnpwa.com/v0/news/1.json';
 const CONTENT_URL = 'https://api.hnpwa.com/v0/item/@id.json'; // @id 바꿔치키
 
-const container = document.getElementById('root');
 const content = document.createElement('div');
 //const ul = document.createElement('ul');
 
 let endFlag;
 
-const store = {
+const store: Store = {
     currentPage : 1, // 최근 페이지
     feeds : [],
 }; 
+
+
 
 
 function getData(url){
