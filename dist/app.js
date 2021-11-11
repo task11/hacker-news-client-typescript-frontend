@@ -117,26 +117,97 @@ parcelRequire = (function (modules, cache, entry, globalName) {
   }
 
   return newRequire;
-})({"app.js":[function(require,module,exports) {
-var ajax = new XMLHttpRequest();
+})({"app.ts":[function(require,module,exports) {
+"use strict";
+
+var __extends = this && this.__extends || function () {
+  var _extendStatics = function extendStatics(d, b) {
+    _extendStatics = Object.setPrototypeOf || {
+      __proto__: []
+    } instanceof Array && function (d, b) {
+      d.__proto__ = b;
+    } || function (d, b) {
+      for (var p in b) {
+        if (Object.prototype.hasOwnProperty.call(b, p)) d[p] = b[p];
+      }
+    };
+
+    return _extendStatics(d, b);
+  };
+
+  return function (d, b) {
+    if (typeof b !== "function" && b !== null) throw new TypeError("Class extends value " + String(b) + " is not a constructor or null");
+
+    _extendStatics(d, b);
+
+    function __() {
+      this.constructor = d;
+    }
+
+    d.prototype = b === null ? Object.create(b) : (__.prototype = b.prototype, new __());
+  };
+}();
+
+var container = document.getElementById('root'); //const ajax: XMLHttpRequest = new XMLHttpRequest();
+
 var NEWS_URL = 'https://api.hnpwa.com/v0/news/1.json';
 var CONTENT_URL = 'https://api.hnpwa.com/v0/item/@id.json'; // @id 바꿔치키
 
-var container = document.getElementById('root');
 var content = document.createElement('div'); //const ul = document.createElement('ul');
 
 var endFlag;
 var store = {
   currentPage: 1,
-  // 최근 페이지
   feeds: []
 };
 
-function getData(url) {
-  ajax.open('GET', url, false);
-  ajax.send();
-  return JSON.parse(ajax.response);
-}
+var Api = function () {
+  function Api(url) {
+    this.url = url;
+    this.ajax = new XMLHttpRequest();
+  }
+
+  Api.prototype.getRequest = function () {
+    this.ajax.open('GET', this.url, false);
+    this.ajax.send();
+    return JSON.parse(this.ajax.response);
+  };
+
+  return Api;
+}();
+
+var NewsFeedApi = function (_super) {
+  __extends(NewsFeedApi, _super);
+
+  function NewsFeedApi() {
+    return _super !== null && _super.apply(this, arguments) || this;
+  }
+
+  NewsFeedApi.prototype.getData = function () {
+    return this.getRequest();
+  };
+
+  return NewsFeedApi;
+}(Api);
+
+var NewsDetailApi = function (_super) {
+  __extends(NewsDetailApi, _super);
+
+  function NewsDetailApi() {
+    return _super !== null && _super.apply(this, arguments) || this;
+  }
+
+  NewsDetailApi.prototype.getData = function () {
+    return this.getRequest();
+  };
+
+  return NewsDetailApi;
+}(Api); // function getData<AjaxResponse>(url: string): AjaxResponse{
+//     ajax.open('GET', url, false);
+//     ajax.send();
+//     return JSON.parse(ajax.response);
+// }
+
 
 function makeFeeds(feeds) {
   for (var i = 0; i < feeds.length; i++) {
@@ -146,32 +217,43 @@ function makeFeeds(feeds) {
   return feeds;
 }
 
+function updateView(html) {
+  if (container != null) {
+    container.innerHTML = html;
+  } else {
+    console.error('최상위 컨테이너가 없어 UI를 진행하지 못합니다.');
+  }
+}
+
 function newsFeed() {
+  var api = new NewsFeedApi(NEWS_URL);
   var newsFeed = store.feeds;
   var newsList = [];
   var template = "\n        <div class=\"bg-gray-600 min-h-screen\">\n            <div class=\"bg-white text-xl\">\n                <div class=\"mx-auto px-4\">\n                    <div class=\"flex justify-between items-center py-6\">\n                        <div class=\"flex justify-start\">\n                            <h1 class=\"font-extrabold\">Hacker News</h1>\n                        </div>\n                        <div class=\"items-center justify-end\">\n                            <a href=\"#/page/{{__prev_page__}}\" class=\"text-gray-500\">\n                                Previous\n                            </a>\n                            <a href=\"#/page/{{__next_page__}}\" class=\"text-gray-500 ml-4\">\n                                Next\n                            </a>\n                        </div>\n                    </div>\n                </div>\n            </div>\n            <div class=\"p4 text-2xl text-gray-700\">\n                {{__news_feed__}}\n            </div>\n        </div>\n    "; // handlebars templates 적용해보기
 
   if (newsFeed.length === 0) {
-    newsFeed = store.feeds = makeFeeds(getData(NEWS_URL)); // 두줄짜리 코드 한줄로
-  }
+    newsFeed = store.feeds = makeFeeds(api.getData()); // 두줄짜리 코드 한줄로
+  } // for 문 내부 i 는 타입 추론으로 자동으로 number형으로 인식 
+
 
   for (var i = (store.currentPage - 1) * 10; i < store.currentPage * 10; i++) {
     //const div = document.createElement('div');
-    newsList.push("\n            <div class=\"p-6 ".concat(newsFeed[i].read ? 'bg-red-500' : 'bg-white', " mt-6 rounded-lg shadow-md transition-colors duration-500 hober:bg-green-100\">\n                <div class=\"flex\">\n                    <div class=\"flex-auto\">\n                        <a href = #/show/").concat(newsFeed[i].id, ">").concat(newsFeed[i].title, "</a>\n                    </div>\n                    <div>\n                        <div class=\"text-center text-sm\">").concat(newsFeed[i].comments_count, "</div>\n                    </div>\n                </div>\n                <div class=\"flex mt-3\">\n                    <div class=\"grid grid-cols-3 text-sm text-gray-500\">\n                        <div><i class=\"fas fa-user mr-1\"></i>").concat(newsFeed[i].user, "</div>\n                        <div><i class=\"fas fa-heart mr-1\"></i>").concat(newsFeed[i].points, "</div>\n                        <div><i class=\"far fa-clock mr-1\"></i>").concat(newsFeed[i].time_ago, "</div>\n                    </div>\n                </div>\n            </div>\n        "));
+    newsList.push("\n            <div class=\"p-6 " + (newsFeed[i].read ? 'bg-red-500' : 'bg-white') + " mt-6 rounded-lg shadow-md transition-colors duration-500 hober:bg-green-100\">\n                <div class=\"flex\">\n                    <div class=\"flex-auto\">\n                        <a href = #/show/" + newsFeed[i].id + ">" + newsFeed[i].title + "</a>\n                    </div>\n                    <div>\n                        <div class=\"text-center text-sm\">" + newsFeed[i].comments_count + "</div>\n                    </div>\n                </div>\n                <div class=\"flex mt-3\">\n                    <div class=\"grid grid-cols-3 text-sm text-gray-500\">\n                        <div><i class=\"fas fa-user mr-1\"></i>" + newsFeed[i].user + "</div>\n                        <div><i class=\"fas fa-heart mr-1\"></i>" + newsFeed[i].points + "</div>\n                        <div><i class=\"far fa-clock mr-1\"></i>" + newsFeed[i].time_ago + "</div>\n                    </div>\n                </div>\n            </div>\n        ");
   }
 
   template = template.replace('{{__news_feed__}}', newsList.join('')); //container.innerHTML = newsList.join(''); // 조인 사용시 배열안의 문자열들을 합쳐서 반환해준다, 배열 인덱스 사이의 구분자(default = ,)가 존재하기때문에 없애줘야하는데,, join 함수의 첫번째 파라미터는 구분자를 어떤것을 사용할지 정하는 부분. 그렇기때문에 '' 라는 공백을 넣으면 문자열만을 반환해준다.
 
-  template = template.replace('{{__prev_page__}}', store.currentPage > 1 ? store.currentPage - 1 : 1);
-  template = template.replace('{{__next_page__}}', store.currentPage + 1);
-  container.innerHTML = template;
+  template = template.replace('{{__prev_page__}}', String(store.currentPage > 1 ? store.currentPage - 1 : 1));
+  template = template.replace('{{__next_page__}}', String(store.currentPage + 1));
+  updateView(template);
 }
 
 function newsDetail() {
   //console.log(location.hash); //id가져오기 (브라우저가 기본으로 제공해주는 객체)
   var id = location.hash.substr(7);
-  var newsContent = getData(CONTENT_URL.replace('@id', id));
-  var template = "\n        <div class=\"bg-gray-600 min-h-screen pb-8\">\n            <div class=\"bg-white text-xl\">\n                <div class=\"mx-auto px-4\">\n                    <div class=\"flex justify-between items-center py-6\">\n                        <div class=\"flex justify-start\">\n                            <h1 class=\"font-extrabold\">Hacker News</h1>\n                        </div>\n                        <div class=\"items-center justify-end\">\n                            <a href=\"#/page/".concat(store.currentPage, "\" class=\"text-gray-500\">\n                                <i class=\"fa fa-times\"></i>\n                            </a>\n                        </div>\n                    </div>\n                </div>\n            </div>\n            <div class=\"h-full border rounded-xl bg-white m-6 b-4\">\n                <h2>").concat(newsContent.title, "</h2>\n                <div class=\"text-gray-400 h-20\">\n                    ").concat(newsContent.content, "\n                </div>\n\n                {{__comments__}}\n\n            </div>\n        </div>\n    ");
+  var api = new NewsDetailApi(CONTENT_URL.replace('@id', id));
+  var newsContent = api.getData();
+  var template = "\n        <div class=\"bg-gray-600 min-h-screen pb-8\">\n            <div class=\"bg-white text-xl\">\n                <div class=\"mx-auto px-4\">\n                    <div class=\"flex justify-between items-center py-6\">\n                        <div class=\"flex justify-start\">\n                            <h1 class=\"font-extrabold\">Hacker News</h1>\n                        </div>\n                        <div class=\"items-center justify-end\">\n                            <a href=\"#/page/" + store.currentPage + "\" class=\"text-gray-500\">\n                                <i class=\"fa fa-times\"></i>\n                            </a>\n                        </div>\n                    </div>\n                </div>\n            </div>\n            <div class=\"h-full border rounded-xl bg-white m-6 b-4\">\n                <h2>" + newsContent.title + "</h2>\n                <div class=\"text-gray-400 h-20\">\n                    " + newsContent.content + "\n                </div>\n\n                {{__comments__}}\n\n            </div>\n        </div>\n    ";
 
   for (var i = 0; i < store.feeds.length; i++) {
     if (store.feeds[i].id === Number(id)) {
@@ -180,22 +262,22 @@ function newsDetail() {
     }
   }
 
-  function makeComment(comments) {
-    var called = arguments.length > 1 && arguments[1] !== undefined ? arguments[1] : 1;
-    var commentString = [];
+  updateView(template.replace('{{__comments__}}', makeComment(newsContent.comments)));
+}
 
-    for (var _i = 0; _i < comments.length; _i++) {
-      commentString.push("\n                <div style=\"padding-left : ".concat(called * 40, "px;\" class=\"mt-4\">\n                    <div class=\"text-gray-400\">\n                        <i class=\"fa fa-sort-up mr-2\"></i>\n                        <strong>").concat(comments[_i].user, "</strong> ").concat(comments[_i].time_ago, "\n                    </div>\n                    <p class=\"text-gray-700\">").concat(comments[_i].content, "</p>\n                </div>\n            "));
+function makeComment(comments) {
+  var commentString = [];
 
-      if (comments[_i].comments.length > 0) {
-        commentString.push(makeComment(comments[_i].comments, called + 1));
-      }
+  for (var i = 0; i < comments.length; i++) {
+    var comment = comments[i];
+    commentString.push("\n            <div style=\"padding-left : " + comment.level * 40 + "px;\" class=\"mt-4\">\n                <div class=\"text-gray-400\">\n                    <i class=\"fa fa-sort-up mr-2\"></i>\n                    <strong>" + comment.user + "</strong> " + comment.time_ago + "\n                </div>\n                <p class=\"text-gray-700\">" + comment.content + "</p>\n            </div>\n        ");
+
+    if (comment.comments.length > 0) {
+      commentString.push(makeComment(comment.comments));
     }
-
-    return commentString.join('');
   }
 
-  container.innerHTML = template.replace('{{__comments__}}', makeComment(newsContent.comments));
+  return commentString.join('');
 }
 
 function router() {
@@ -243,7 +325,7 @@ var parent = module.bundle.parent;
 if ((!parent || !parent.isParcelRequire) && typeof WebSocket !== 'undefined') {
   var hostname = "" || location.hostname;
   var protocol = location.protocol === 'https:' ? 'wss' : 'ws';
-  var ws = new WebSocket(protocol + '://' + hostname + ':' + "49649" + '/');
+  var ws = new WebSocket(protocol + '://' + hostname + ':' + "55509" + '/');
 
   ws.onmessage = function (event) {
     checkedAssets = {};
@@ -419,5 +501,5 @@ function hmrAcceptRun(bundle, id) {
     return true;
   }
 }
-},{}]},{},["../../../usr/local/lib/node_modules/parcel-bundler/src/builtins/hmr-runtime.js","app.js"], null)
-//# sourceMappingURL=/app.c328ef1a.js.map
+},{}]},{},["../../../usr/local/lib/node_modules/parcel-bundler/src/builtins/hmr-runtime.js","app.ts"], null)
+//# sourceMappingURL=/app.js.map

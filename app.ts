@@ -7,26 +7,26 @@ interface Store {
 
 interface News {
     readonly id: number; // 코드에서 id 수정 불가능 ( 서버에 id값이 있기때문에 바뀌면 호출하지 못할 수도 있는 경우 )
-    time_ago: string;
-    title: string;
-    url: string;
-    user: string;
-    content: string;
+    readonly time_ago: string;
+    readonly title: string;
+    readonly url: string;
+    readonly user: string;
+    readonly content: string;
 }
 
 interface NewsFeed extends News {
-    comments_count: number;
-    points: number;
+    readonly comments_count: number;
+    readonly points: number;
     read?: boolean; // ?: -> optional 
 }
 
 interface NewsDetail extends News {
-    comments: [];
+    readonly comments: [];
 }
 
 interface NewsComment extends News {
-    comments: [];
-    level: number;
+    readonly comments: [];
+    readonly level: number;
 }
 
 const container: HTMLElement | null = document.getElementById('root');
@@ -44,12 +44,40 @@ const store: Store = {
     feeds : [],
 }; 
 
+class Api {
+    url: string;
+    ajax: XMLHttpRequest;
+    
+    constructor(url: string){
+        this.url = url;
+        this.ajax = new XMLHttpRequest();
+    }
 
-function getData<AjaxResponse>(url: string): AjaxResponse{
-    ajax.open('GET', url, false);
-    ajax.send();
-    return JSON.parse(ajax.response);
+    protected getRequest<AjaxResponse>(): AjaxResponse { // protected 생성자 안의 함수로 바깥에서 호출되지않게
+        this.ajax.open('GET', this.url, false);
+        this.ajax.send();
+        return JSON.parse(this.ajax.response);
+    }
+
 }
+
+class NewsFeedApi extends Api{
+    getData(): NewsFeed[] {
+        return this.getRequest<NewsFeed[]>();
+    }
+}
+
+class NewsDetailApi extends Api{
+    getData(): NewsDetail {
+        return this.getRequest<NewsDetail>();
+    }
+}
+
+// function getData<AjaxResponse>(url: string): AjaxResponse{
+//     ajax.open('GET', url, false);
+//     ajax.send();
+//     return JSON.parse(ajax.response);
+// }
 
 function makeFeeds(feeds: NewsFeed[]): NewsFeed[]{
     for(let i = 0; i < feeds.length; i++){
@@ -69,6 +97,7 @@ function updateView(html: string): void{
 }
 
 function newsFeed(): void{
+    const api = new NewsFeedApi(NEWS_URL);
     let newsFeed: NewsFeed[] = store.feeds;
     const newsList = [];
     let template = `
@@ -97,7 +126,7 @@ function newsFeed(): void{
     `; // handlebars templates 적용해보기
 
     if(newsFeed.length === 0){
-       newsFeed = store.feeds = makeFeeds(getData<NewsFeed[]>(NEWS_URL)); // 두줄짜리 코드 한줄로
+       newsFeed = store.feeds = makeFeeds(api.getData()); // 두줄짜리 코드 한줄로
     }
     // for 문 내부 i 는 타입 추론으로 자동으로 number형으로 인식 
     for(let i = (store.currentPage - 1) * 10; i < store.currentPage * 10; i++){
@@ -136,10 +165,10 @@ function newsFeed(): void{
 
 
 function newsDetail(): void{
-
     //console.log(location.hash); //id가져오기 (브라우저가 기본으로 제공해주는 객체)
     const id = location.hash.substr(7);
-    const newsContent = getData<NewsDetail>(CONTENT_URL.replace('@id', id));
+    const api = new NewsDetailApi(CONTENT_URL.replace('@id', id));
+    const newsContent = api.getData();
     let template = `
         <div class="bg-gray-600 min-h-screen pb-8">
             <div class="bg-white text-xl">
