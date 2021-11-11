@@ -4,15 +4,28 @@ type Store = {
     feeds: NewsFeed[];
 }
 
-type NewsFeed = {
+type News = {
     id: number;
-    comments_count: number;
+    time_ago: string;
+    title: string;
     url: string;
     user: string;
-    time_ago: string;
+    content: string;
+}
+
+type NewsFeed = News & {
+    comments_count: number;
     points: number;
-    title: string;
     read?: boolean; // ?: -> optional 
+}
+
+type NewsDetail = News & {
+    comments: [];
+}
+
+type NewsComment = News & {
+    comments: [];
+    level: number;
 }
 
 const container: HTMLElement | null = document.getElementById('root');
@@ -31,15 +44,13 @@ const store: Store = {
 }; 
 
 
-
-
-function getData(url){
+function getData<AjaxResponse>(url: string): AjaxResponse{
     ajax.open('GET', url, false);
     ajax.send();
     return JSON.parse(ajax.response);
 }
 
-function makeFeeds(feeds){
+function makeFeeds(feeds: NewsFeed[]): NewsFeed[]{
     for(let i = 0; i < feeds.length; i++){
         feeds[i].read = false; 
     }
@@ -47,7 +58,7 @@ function makeFeeds(feeds){
     return feeds;
 }
 
-function updateView(html){
+function updateView(html: string): void{
     if(container != null){
         container.innerHTML = html;
     }else{
@@ -56,7 +67,7 @@ function updateView(html){
 
 }
 
-function newsFeed(){
+function newsFeed(): void{
     let newsFeed: NewsFeed[] = store.feeds;
     const newsList = [];
     let template = `
@@ -85,7 +96,7 @@ function newsFeed(){
     `; // handlebars templates 적용해보기
 
     if(newsFeed.length === 0){
-       newsFeed = store.feeds = makeFeeds(getData(NEWS_URL)); // 두줄짜리 코드 한줄로
+       newsFeed = store.feeds = makeFeeds(getData<NewsFeed[]>(NEWS_URL)); // 두줄짜리 코드 한줄로
     }
     // for 문 내부 i 는 타입 추론으로 자동으로 number형으로 인식 
     for(let i = (store.currentPage - 1) * 10; i < store.currentPage * 10; i++){
@@ -115,19 +126,19 @@ function newsFeed(){
 
     
     template = template.replace('{{__news_feed__}}', newsList.join('')); //container.innerHTML = newsList.join(''); // 조인 사용시 배열안의 문자열들을 합쳐서 반환해준다, 배열 인덱스 사이의 구분자(default = ,)가 존재하기때문에 없애줘야하는데,, join 함수의 첫번째 파라미터는 구분자를 어떤것을 사용할지 정하는 부분. 그렇기때문에 '' 라는 공백을 넣으면 문자열만을 반환해준다.
-    template = template.replace('{{__prev_page__}}', store.currentPage > 1 ? store.currentPage -1 : 1);
-    template = template.replace('{{__next_page__}}', store.currentPage + 1);
+    template = template.replace('{{__prev_page__}}', String(store.currentPage > 1 ? store.currentPage -1 : 1));
+    template = template.replace('{{__next_page__}}', String(store.currentPage + 1));
 
     updateView(template);
     
 }
 
 
-function newsDetail(){
+function newsDetail(): void{
 
     //console.log(location.hash); //id가져오기 (브라우저가 기본으로 제공해주는 객체)
     const id = location.hash.substr(7);
-    const newsContent = getData(CONTENT_URL.replace('@id', id));
+    const newsContent = getData<NewsDetail>(CONTENT_URL.replace('@id', id));
     let template = `
         <div class="bg-gray-600 min-h-screen pb-8">
             <div class="bg-white text-xl">
@@ -162,32 +173,33 @@ function newsDetail(){
             break;
         }
     }
-
-    function makeComment(comments, called = 1){
-        const commentString =[];
-
-        for(let i = 0; i < comments.length; i++){
-            commentString.push(`
-                <div style="padding-left : ${called * 40}px;" class="mt-4">
-                    <div class="text-gray-400">
-                        <i class="fa fa-sort-up mr-2"></i>
-                        <strong>${comments[i].user}</strong> ${comments[i].time_ago}
-                    </div>
-                    <p class="text-gray-700">${comments[i].content}</p>
-                </div>
-            `);
-            if(comments[i].comments.length > 0){
-                commentString.push(makeComment(comments[i].comments, called + 1));
-            }
-        }
-
-        return commentString.join('');
-    }
-
+  
     updateView(template.replace('{{__comments__}}', makeComment(newsContent.comments)));
 }
 
-function router(){
+function makeComment(comments: NewsComment[]): string{
+    const commentString =[];
+
+    for(let i = 0; i < comments.length; i++){
+        const comment: NewsComment = comments[i];
+        commentString.push(`
+            <div style="padding-left : ${comment.level * 40}px;" class="mt-4">
+                <div class="text-gray-400">
+                    <i class="fa fa-sort-up mr-2"></i>
+                    <strong>${comment.user}</strong> ${comment.time_ago}
+                </div>
+                <p class="text-gray-700">${comment.content}</p>
+            </div>
+        `);
+        if(comment.comments.length > 0){
+            commentString.push(makeComment(comment.comments));
+        }
+    }
+
+    return commentString.join('');
+}
+
+function router(): void{
     const routePath = location.hash; 
 
     if(routePath === ''){// location 해쉬에 #이 들어오면 빈 값 반환이 되어 조건문이 동작하는 것
