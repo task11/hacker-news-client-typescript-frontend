@@ -47,8 +47,17 @@ function makeFeeds(feeds){
     return feeds;
 }
 
+function updateView(html){
+    if(container != null){
+        container.innerHTML = html;
+    }else{
+        console.error('최상위 컨테이너가 없어 UI를 진행하지 못합니다.');
+    }  
+
+}
+
 function newsFeed(){
-    let newsFeed = store.feeds;
+    let newsFeed: NewsFeed[] = store.feeds;
     const newsList = [];
     let template = `
         <div class="bg-gray-600 min-h-screen">
@@ -78,7 +87,7 @@ function newsFeed(){
     if(newsFeed.length === 0){
        newsFeed = store.feeds = makeFeeds(getData(NEWS_URL)); // 두줄짜리 코드 한줄로
     }
-
+    // for 문 내부 i 는 타입 추론으로 자동으로 number형으로 인식 
     for(let i = (store.currentPage - 1) * 10; i < store.currentPage * 10; i++){
         //const div = document.createElement('div');
         
@@ -108,8 +117,9 @@ function newsFeed(){
     template = template.replace('{{__news_feed__}}', newsList.join('')); //container.innerHTML = newsList.join(''); // 조인 사용시 배열안의 문자열들을 합쳐서 반환해준다, 배열 인덱스 사이의 구분자(default = ,)가 존재하기때문에 없애줘야하는데,, join 함수의 첫번째 파라미터는 구분자를 어떤것을 사용할지 정하는 부분. 그렇기때문에 '' 라는 공백을 넣으면 문자열만을 반환해준다.
     template = template.replace('{{__prev_page__}}', store.currentPage > 1 ? store.currentPage -1 : 1);
     template = template.replace('{{__next_page__}}', store.currentPage + 1);
+
+    updateView(template);
     
-    container.innerHTML = template;
 }
 
 
@@ -174,8 +184,7 @@ function newsDetail(){
         return commentString.join('');
     }
 
-    container.innerHTML = template.replace('{{__comments__}}', makeComment(newsContent.comments));
-
+    updateView(template.replace('{{__comments__}}', makeComment(newsContent.comments)));
 }
 
 function router(){
