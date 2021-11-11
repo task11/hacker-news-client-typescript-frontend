@@ -1,11 +1,12 @@
-//type alias
-type Store = {
+//1. type alias -> 1. = {} 형식 2. 타입 결합시키는 방식 ( A & B = {})
+//2. interface -> 1. 타입을 결합시키거나 조합시키는 방식이 다름 ( A extends B ) 2. 유니온 타입은 인터페이스를 사용 불가능
+interface Store {
     currentPage: number;
     feeds: NewsFeed[];
 }
 
-type News = {
-    id: number;
+interface News {
+    readonly id: number; // 코드에서 id 수정 불가능 ( 서버에 id값이 있기때문에 바뀌면 호출하지 못할 수도 있는 경우 )
     time_ago: string;
     title: string;
     url: string;
@@ -13,17 +14,17 @@ type News = {
     content: string;
 }
 
-type NewsFeed = News & {
+interface NewsFeed extends News {
     comments_count: number;
     points: number;
     read?: boolean; // ?: -> optional 
 }
 
-type NewsDetail = News & {
+interface NewsDetail extends News {
     comments: [];
 }
 
-type NewsComment = News & {
+interface NewsComment extends News {
     comments: [];
     level: number;
 }
