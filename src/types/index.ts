@@ -2,9 +2,16 @@ import View from "../core/view";
 
 //1. type alias -> 1. = {} 형식 2. 타입 결합시키는 방식 ( A & B = {})
 //2. interface -> 1. 타입을 결합시키거나 조합시키는 방식이 다름 ( A extends B ) 2. 유니온 타입은 인터페이스를 사용 불가능
-export interface Store {
+export interface NewsStore {
+    getAllFeeds: () => NewsFeed[];
+    getFeed: (positon: number) => NewsFeed;
+    setFeeds: (feeds: NewsFeed[]) => void;
+    makeRead: (id: number) => void;
+    hasFeeds: boolean;
     currentPage: number;
-    feeds: NewsFeed[];
+    numberOfFeed: number;
+    nextPage: number;
+    prevPage: number;
 }
 
 export interface News {

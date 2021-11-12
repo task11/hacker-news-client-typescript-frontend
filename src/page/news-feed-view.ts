@@ -1,8 +1,7 @@
 import View from "../core/view";
 import { NewsFeedApi } from "../core/api";
-import { NewsFeed } from "../types";
+import { NewsFeed, NewsStore } from "../types";
 import { NEWS_URL } from "../config";
-
 const template: string = `
             <div class="bg-gray-600 min-h-screen">
                 <div class="bg-white text-xl">
@@ -30,28 +29,40 @@ const template: string = `
 
 export default class NewsFeedView extends View {
     private api: NewsFeedApi;
-    private feeds: NewsFeed[];
+    private store: NewsStore;
 
-    constructor(conatinerId: string){
+    constructor(conatinerId: string, store: NewsStore){
         
         
         super(conatinerId, template); // 슈퍼클래스
 
+        this.store = store;
         this.api = new NewsFeedApi(NEWS_URL);
-        this.feeds = window.store.feeds;
     
 
-        if(this.feeds.length === 0){
-            this.feeds = window.store.feeds = this.api.getData(); // 두줄짜리 코드 한줄로
-            this.makeFeeds();
-        }
+        
     }
 
     render():void {
-        window.store.currentPage = Number(location.hash.substr(7) || 1);
+        this.store.currentPage = Number(location.hash.substr(7) || 1);
+
+        if(!this.store.hasFeeds){
+            this.api.getData((feeds: NewsFeed[]) => {
+                this.store.setFeeds(feeds);
+                this.renderview();
+            })
+            // this.feeds = window.store.feeds = this.api.getData(); // 두줄짜리 코드 한줄로
+            // this.makeFeeds();
+        }
+
+        this.renderview();
+    }
+
+
+    renderview = (page: string = '1'): void => {
         // for 문 내부 i 는 타입 추론으로 자동으로 number형으로 인식 
-        for(let i = (window.store.currentPage - 1) * 10; i < window.store.currentPage * 10; i++){
-            const {id, title, comments_count, user, points, time_ago, read} = this.feeds[i]; //구조분해할당 -> ES5 이후 추가된 많이쓰이는 문법
+        for(let i = (this.store.currentPage - 1) * 10; i < this.store.currentPage * 10; i++){
+            const {id, title, comments_count, user, points, time_ago, read} = this.store.getFeed(i); //구조분해할당 -> ES5 이후 추가된 많이쓰이는 문법
             //const div = document.createElement('div');
             this.addHtml(`
                 <div class="p-6 ${read ? 'bg-red-500' : 'bg-white'} mt-6 rounded-lg shadow-md transition-colors duration-500 hober:bg-green-100">
@@ -75,16 +86,9 @@ export default class NewsFeedView extends View {
         }
         
         this.setTemplateData('news_feed', this.getHtml()); //container.innerHTML = newsList.join(''); // 조인 사용시 배열안의 문자열들을 합쳐서 반환해준다, 배열 인덱스 사이의 구분자(default = ,)가 존재하기때문에 없애줘야하는데,, join 함수의 첫번째 파라미터는 구분자를 어떤것을 사용할지 정하는 부분. 그렇기때문에 '' 라는 공백을 넣으면 문자열만을 반환해준다.
-        this.setTemplateData('prev_page', String(window.store.currentPage > 1 ? window.store.currentPage -1 : 1));
-        this.setTemplateData('next_page', String(window.store.currentPage + 1));
+        this.setTemplateData('prev_page', String(this.store.prevPage));
+        this.setTemplateData('next_page', String(this.store.nextPage));
 
         this.updateView();
     }
-
-    private makeFeeds(): void{
-        for(let i = 0; i < this.feeds.length; i++){
-            this.feeds[i].read = false; 
-        }
-    }
-
 }

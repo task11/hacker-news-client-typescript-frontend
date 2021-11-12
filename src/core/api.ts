@@ -9,24 +9,32 @@ export class Api {
         this.url = url;
     }
     
-    getRequest<AjaxResponse>(): AjaxResponse { // protected 생성자 안의 함수로 바깥에서 호출되지않게
-        this.ajax.open('GET', this.url, false);
+    getRequest<AjaxResponse>(cb: (data: AjaxResponse) => void): void { // protected 생성자 안의 함수로 바깥에서 호출되지않게
+        this.ajax.open('GET', this.url);
+        this.ajax.addEventListener('load', () => {
+            cb(JSON.parse(this.ajax.response) as AjaxResponse);
+        });
         this.ajax.send();
-    
-        return JSON.parse(this.ajax.response);
     }
 
 }
 
 export class NewsFeedApi extends Api{
-    getData(): NewsFeed[] {
-        return this.getRequest<NewsFeed[]>();
+    constructor(url: string){
+        super(url);
+    }
+
+    getData(cb: (data: NewsFeed[]) => void): void {
+        return this.getRequest<NewsFeed[]>(cb);
     }
 }
 
 export class NewsDetailApi extends Api{
-    getData(id: string): NewsDetail {
-        return this.getRequest<NewsDetail>();
+    constructor(url: string){
+        super(url);
+    }
+    getData(cb: (data: NewsDetail) => void): void {
+        return this.getRequest<NewsDetail>(cb);
     }
 }
 
