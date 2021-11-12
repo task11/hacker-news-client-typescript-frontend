@@ -42,7 +42,7 @@ export default class NewsDetailView extends View {
         //console.log(location.hash); //id가져오기 (브라우저가 기본으로 제공해주는 객체)
         const id = location.hash.substr(7);
         const api = new NewsDetailApi(CONTENT_URL.replace('@id', id));
-        api.getData((data: NewsDetail) => {
+        api.getDataWithPromise((data: NewsDetail) => {
             const { title, content, comments } = data;
 
             // for(let i = 0; i < window.store.feeds.length; i++){
