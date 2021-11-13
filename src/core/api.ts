@@ -1,4 +1,4 @@
-import {NewsFeed, NewsDetail} from '../types'
+import {NewsFeed, NewsDetail, News} from '../types'
 
 export class Api {
     xhr: XMLHttpRequest;
@@ -8,22 +8,15 @@ export class Api {
         this.xhr = new XMLHttpRequest;
         this.url = url;
     }
-    
-    getRequestWithXHR<xhrResponse>(cb: (data: xhrResponse) => void): void { // protected 생성자 안의 함수로 바깥에서 호출되지않게
-        this.xhr.open('GET', this.url);
-        this.xhr.addEventListener('load', () => {
-            cb(JSON.parse(this.xhr.response) as xhrResponse);
-        });
-        this.xhr.send();
-    }
 
-    getRequestWithPromise<xhrResponse>(cb: (data: xhrResponse) => void): void { // protected 생성자 안의 함수로 바깥에서 호출되지않게
-        fetch(this.url)
-            .then(response => response.json())
-            .then(cb)
-            .catch(()=>{
-                console.error('데이터를 불러오지 못했습니다.');
-            });
+    async request<AjaxResponse>(): Promise<AjaxResponse> { // protected 생성자 안의 함수로 바깥에서 호출되지않게
+        const response = await fetch(this.url);
+        return await response.json() as AjaxResponse;
+            // .then(response => response.json())
+            // .then(cb)
+            // .catch(()=>{
+            //     console.error('데이터를 불러오지 못했습니다.');
+            // });
     }
 
 }
@@ -33,12 +26,8 @@ export class NewsFeedApi extends Api{
         super(url);
     }
 
-    getDataWithXHR(cb: (data: NewsFeed[]) => void): void {
-        return this.getRequestWithXHR<NewsFeed[]>(cb);
-    }
-
-    getDataWithPromise(cb: (data: NewsFeed[]) => void): void {
-        return this.getRequestWithPromise<NewsFeed[]>(cb);
+    getData(): Promise<NewsFeed[]> {
+        return this.request<NewsFeed[]>();
     }
 }
 
@@ -46,12 +35,9 @@ export class NewsDetailApi extends Api{
     constructor(url: string){
         super(url);
     }
-    getDataWithXHR(cb: (data: NewsDetail) => void): void {
-        return this.getRequestWithXHR<NewsDetail>(cb);
-    }
 
-    getDataWithPromise(cb: (data: NewsDetail) => void): void {
-        return this.getRequestWithPromise<NewsDetail>(cb);
+    getData(): Promise<NewsDetail> {
+        return this.request<NewsDetail>();
     }
 }
 

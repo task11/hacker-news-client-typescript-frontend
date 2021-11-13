@@ -38,12 +38,12 @@ export default class NewsDetailView extends View {
         this.store = store;
     }
 
-    render():void {
+    render = async (id : string = location.hash.substr(7) ): Promise<void> => {
         //console.log(location.hash); //id가져오기 (브라우저가 기본으로 제공해주는 객체)
-        const id = location.hash.substr(7);
+        
         const api = new NewsDetailApi(CONTENT_URL.replace('@id', id));
-        api.getDataWithPromise((data: NewsDetail) => {
-            const { title, content, comments } = data;
+
+        const { title, content, comments } = await api.getData();
 
             // for(let i = 0; i < window.store.feeds.length; i++){
             //     if (window.store.feeds[i].id === Number(id)){
@@ -60,9 +60,6 @@ export default class NewsDetailView extends View {
 
             
             this.updateView();
-
-        });
-
 
         
     }

@@ -43,23 +43,18 @@ export default class NewsFeedView extends View {
         
     }
 
-    render():void {
+    render = async (page: string = '1'): Promise<void> => {
         this.store.currentPage = Number(location.hash.substr(7) || 1);
 
         if(!this.store.hasFeeds){
-            this.api.getDataWithPromise((feeds: NewsFeed[]) => {
-                this.store.setFeeds(feeds);
-                this.renderview();
-            })
+            this.store.setFeeds(await this.api.getData());
+            // this.api.getDataWithPromise((feeds: NewsFeed[]) => {
+            //     this.store.setFeeds(feeds);
+            //     this.renderview();
+            // })
             // this.feeds = window.store.feeds = this.api.getData(); // 두줄짜리 코드 한줄로
             // this.makeFeeds();
         }
-
-        this.renderview();
-    }
-
-
-    renderview = (page: string = '1'): void => {
         // for 문 내부 i 는 타입 추론으로 자동으로 number형으로 인식 
         for(let i = (this.store.currentPage - 1) * 10; i < this.store.currentPage * 10; i++){
             const {id, title, comments_count, user, points, time_ago, read} = this.store.getFeed(i); //구조분해할당 -> ES5 이후 추가된 많이쓰이는 문법
